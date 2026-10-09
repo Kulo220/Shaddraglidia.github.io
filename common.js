@@ -3,7 +3,7 @@
 // =====================================================================
 
 import { supabase } from './config.js';
-import { getGame } from './games.js?v=18';
+import { getGame } from './games.js?v=19';
 
 // Affichage des images des cartes, directement depuis le serveur de l'API.
 // Passe à false pour tout désactiver d'un coup (ex. si l'API bloque les images).
