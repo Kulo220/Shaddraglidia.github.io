@@ -12,7 +12,7 @@
 // =====================================================================
 
 import { supabase } from './config.js';
-import { getGame } from './games.js?v=18';
+import { getGame } from './games.js?v=19';
 
 export const PRICE_TTL_MS = 24 * 60 * 60 * 1000;
 const MAX_PER_RUN = 400; // cartes redemandées par jeu et par ouverture de page
