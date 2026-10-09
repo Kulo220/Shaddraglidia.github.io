@@ -10,20 +10,20 @@
 // =====================================================================
 
 import { supabase } from './config.js';
-import { GAMES, getGame } from './games.js?v=18';
+import { GAMES, getGame } from './games.js?v=19';
 import {
   $, el, normalize, plural, keyOf, providerOf, friendlyError, fetchAll, ensureCard, createImages,
   bootPage, revealPage, ALL_FILES, SHOW_IMAGES, CARD_COLUMNS,
-} from './common.js?v=18';
+} from './common.js?v=19';
 import {
   getCurrency, initCurrencyToggle, formatMoney, supportsPrices, unitPrice, loadPrices, refreshPrices, sumPrices,
   latestUpdate, CURRENCIES,
-} from './prices.js?v=18';
-import { createOffer, loadSentOffers } from './offers.js?v=18';
-import { rulesFor } from './deck-rules.js?v=18';
+} from './prices.js?v=19';
+import { createOffer, loadSentOffers } from './offers.js?v=19';
+import { rulesFor } from './deck-rules.js?v=19';
 
 // Numéro de version : sert à détecter des fichiers mélangés (anciens/nouveaux)
-const APP_VERSION = '18';
+const APP_VERSION = '19';
 
 // ---------- Rôle de la page ----------
 
@@ -86,6 +86,7 @@ const ui = {
   share: $('share-collection'), // collection : interrupteur de partage
   shareMsg: $('share-msg'),
   priceNote: $('price-note'),
+  purchaseSummary: $('purchase-summary'),
   count: $('count'),
   form: $('search-form'),
   mode: $('mode'),
@@ -279,6 +280,63 @@ function priceInfo(cards) {
   }
   if (without.length) parts.push(`Pas de prix pour ${without.join(', ')}`);
   return parts.join(' · ');
+}
+
+// « Payé (€) : 12,50 € pour 5 cartes · valeur actuelle ≈ 14,00 € · soit +1,50 € de plus-value potentielle »
+// Regroupe par devise d'achat ; une carte sans prix du marché connu est comptée à part.
+function renderPurchaseSummary(shown) {
+  if (!ui.purchaseSummary || !CFG.purchase) return;
+
+  if (state.tab !== 'mine' || !shown.length) {
+    ui.purchaseSummary.hidden = true;
+    return;
+  }
+
+  const groups = new Map(); // devise -> { paid, pricedPaid, market, count, unpriced }
+  for (const entry of shown) {
+    if (!entry.purchased || entry.purchasePrice == null) continue;
+    const cur = entry.purchaseCurrency;
+    const g = groups.get(cur) ?? { paid: 0, pricedPaid: 0, market: 0, count: 0, unpriced: 0 };
+    g.paid += entry.purchasePrice * entry.quantity;
+    g.count += entry.quantity;
+    const unit = unitPrice(state.prices.get(entry.card.id), cur);
+    if (unit == null) g.unpriced += entry.quantity;
+    else {
+      g.pricedPaid += entry.purchasePrice * entry.quantity;
+      g.market += unit * entry.quantity;
+    }
+    groups.set(cur, g);
+  }
+
+  if (!groups.size) {
+    ui.purchaseSummary.hidden = true;
+    return;
+  }
+
+  const lines = [];
+  for (const [cur, g] of groups) {
+    const money = (v) => formatMoney(v, cur);
+    let line = `Payé (${CURRENCIES[cur].label}) : ${money(g.paid)} pour ${plural(g.count, 'exemplaire')}`;
+    if (!state.pricesReady) {
+      line += ' · comparaison en attente des prix…';
+    } else if (g.market || g.pricedPaid) {
+      const diff = g.market - g.pricedPaid;
+      const rounded = Math.abs(diff) < 0.01;
+      line += ` · valeur actuelle ≈ ${money(g.market)}`;
+      line += rounded
+        ? ' (proche du prix payé)'
+        : diff > 0
+          ? ` · soit +${money(diff)} de plus-value potentielle`
+          : ` · soit −${money(Math.abs(diff))} de moins-value potentielle`;
+      if (g.unpriced) line += ` (${plural(g.unpriced, 'exemplaire')} sans prix du marché)`;
+    } else {
+      line += ' · prix du marché inconnu pour ces cartes';
+    }
+    lines.push(line);
+  }
+
+  ui.purchaseSummary.hidden = false;
+  ui.purchaseSummary.textContent = lines.join(' · ');
 }
 
 // Cartes dont on affiche le prix, selon l'onglet
@@ -873,6 +931,7 @@ function updateMineStatus() {
       `${plural(shown.length, 'carte')} · ${pluralCopy(copies)}${priceSummary(shown.map((e) => ({ card: e.card, quantity: e.quantity })))}`,
     );
   }
+  renderPurchaseSummary(shown);
 }
 
 function shownOthers() {
