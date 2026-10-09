@@ -8,20 +8,20 @@
 // =====================================================================
 
 import { supabase } from './config.js';
-import { GAMES, getGame } from './games.js?v=18';
+import { GAMES, getGame } from './games.js?v=19';
 import {
   $, el, plural, keyOf, providerOf, friendlyError, fetchAll, ensureCard, createImages,
   bootPage, revealPage, ALL_FILES, SHOW_IMAGES, CARD_COLUMNS,
-} from './common.js?v=18';
+} from './common.js?v=19';
 import {
   rulesFor, canAdd, autoZone, alternativeZones, evaluate, missingCards, ownedByIdentity, zonesOf, rangeText,
-} from './deck-rules.js?v=18';
+} from './deck-rules.js?v=19';
 import {
   getCurrency, initCurrencyToggle, formatMoney, supportsPrices, unitPrice, loadPrices, refreshPrices, sumPrices,
   latestUpdate, CURRENCIES,
-} from './prices.js?v=18';
+} from './prices.js?v=19';
 
-const APP_VERSION = '18';
+const APP_VERSION = '19';
 
 // ---------- Éléments de la page ----------
 
