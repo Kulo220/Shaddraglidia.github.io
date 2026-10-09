@@ -9,11 +9,11 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700&family=Figtree:wght@400;600&display=swap" rel="stylesheet">
   <meta name="color-scheme" content="light dark">
-  <script src="theme.js?v=18"></script>
-  <link rel="stylesheet" href="style.css?v=18">
+  <script src="theme.js?v=19"></script>
+  <link rel="stylesheet" href="style.css?v=19">
 </head>
 <!-- Cachée tant que la session n'est pas vérifiée : pas d'écran qui clignote -->
-<body class="app" data-version="18" data-page="account" hidden>
+<body class="app" data-version="19" data-page="account" hidden>
 
   <header class="topbar">
     <nav class="topnav" aria-label="Pages du site">
@@ -135,7 +135,7 @@
     window.addEventListener('error', (e) => showBootError(e.message));
     window.addEventListener('unhandledrejection', (e) => showBootError(String((e.reason && e.reason.message) || e.reason)));
   </script>
-  <script type="module" src="compte.js?v=18"
+  <script type="module" src="compte.js?v=19"
           onerror="showBootError('fichier introuvable (compte.js, common.js ou config.js)')"></script>
 </body>
 </html>
