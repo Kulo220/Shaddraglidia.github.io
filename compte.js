@@ -7,9 +7,9 @@
 // =====================================================================
 
 import { supabase } from './config.js';
-import { $, bootPage, revealPage, downloadJson, fetchAll, friendlyError, CARD_COLUMNS } from './common.js?v=18';
+import { $, bootPage, revealPage, downloadJson, fetchAll, friendlyError, CARD_COLUMNS } from './common.js?v=19';
 
-const APP_VERSION = '18';
+const APP_VERSION = '19';
 const MIN_LENGTH = 8;
 
 const form = $('password-form');
@@ -49,7 +49,12 @@ async function exportMyData(userId, pseudo) {
   $('export-data').disabled = true;
   try {
     const [collection, wishlist, decks, deckCards, offersFrom, offersTo] = await Promise.all([
-      fetchAll(() => supabase.from('collection_items').select(`id, quantity, cards!inner(${CARD_COLUMNS})`).eq('user_id', userId)),
+      fetchAll(() =>
+        supabase
+          .from('collection_items')
+          .select(`id, quantity, purchased, purchase_price, purchase_currency, cards!inner(${CARD_COLUMNS})`)
+          .eq('user_id', userId),
+      ),
       fetchAll(() => supabase.from('wishlist_items').select(`id, quantity, note, cards!inner(${CARD_COLUMNS})`).eq('user_id', userId)),
       fetchAll(() => supabase.from('decks').select('*').eq('user_id', userId)),
       fetchAll(() => supabase.from('deck_cards').select(`id, deck_id, zone, quantity, cards!inner(${CARD_COLUMNS})`)),
@@ -60,7 +65,13 @@ async function exportMyData(userId, pseudo) {
     downloadJson(`mes-donnees-tcg-${new Date().toISOString().slice(0, 10)}.json`, {
       exported_at: new Date().toISOString(),
       compte: { pseudo, id: userId },
-      collection: collection.map((r) => ({ carte: r.cards, quantite: r.quantity })),
+      collection: collection.map((r) => ({
+        carte: r.cards,
+        quantite: r.quantity,
+        achetee: r.purchased,
+        prix_achat: r.purchase_price,
+        devise_achat: r.purchase_currency,
+      })),
       wishlist: wishlist.map((r) => ({ carte: r.cards, quantite: r.quantity, note: r.note })),
       decks: decks.map((d) => ({
         ...d,
